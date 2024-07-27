@@ -1,12 +1,18 @@
-// @ts-check
 import { join } from "path";
 import { readFileSync } from "fs";
 import express from "express";
 import serveStatic from "serve-static";
-
+import dotenv from "dotenv";
 import shopify from "./shopify.js";
 import productCreator from "./product-creator.js";
 import PrivacyWebhookHandlers from "./privacy.js";
+import connectDB from "./config/db.js";
+import priceRoutes from "./routes/priceRoutes.js";
+import cron from "node-cron";
+import { getSession } from "./utils/index.js";
+import { fetchAndStorePrices } from "./controllers/priceController.js";
+
+dotenv.config();
 
 const PORT = parseInt(
   process.env.BACKEND_PORT || process.env.PORT || "3000",
@@ -19,6 +25,8 @@ const STATIC_PATH =
     : `${process.cwd()}/frontend/`;
 
 const app = express();
+
+connectDB();
 
 // Set up Shopify authentication and webhook handling
 app.get(shopify.config.auth.path, shopify.auth.begin());
@@ -38,6 +46,8 @@ app.post(
 app.use("/api/*", shopify.validateAuthenticatedSession());
 
 app.use(express.json());
+
+app.use("/api/prices", priceRoutes);
 
 app.get("/api/products/count", async (_req, res) => {
   const countData = await shopify.api.rest.Product.count({
@@ -68,6 +78,25 @@ app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
     .status(200)
     .set("Content-Type", "text/html")
     .send(readFileSync(join(STATIC_PATH, "index.html")));
+});
+
+// Schedule task to run at midnight every day
+cron.schedule("0 0 * * *", async () => {
+  console.log("Running cron job to fetch and store product prices");
+  try {
+    const session = await getSession();
+    await fetchAndStorePrices(
+      { locals: { shopify: { session } } },
+      {
+        status: () => ({
+          json: () => {},
+          send: () => {},
+        }),
+      }
+    );
+  } catch (error) {
+    console.error(`Error running cron job: ${error.message}`);
+  }
 });
 
 app.listen(PORT);
