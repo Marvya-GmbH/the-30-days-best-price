@@ -10,7 +10,7 @@ import connectDB from "./config/db.js";
 import priceRoutes from "./routes/priceRoutes.js";
 import cron from "node-cron";
 import { getSession } from "./utils/index.js";
-import { fetchAndStorePrices } from "./controllers/priceController.js";
+import { fetchStoreAndUpdatePrices } from "./controllers/priceController.js";
 
 dotenv.config();
 
@@ -82,10 +82,10 @@ app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
 
 // Schedule task to run at midnight every day
 cron.schedule("0 0 * * *", async () => {
-  console.log("Running cron job to fetch and store product prices");
+  console.log("Running cron job to fetch, store, and update product prices");
   try {
     const session = await getSession();
-    await fetchAndStorePrices(
+    await fetchStoreAndUpdatePrices(
       { locals: { shopify: { session } } },
       {
         status: () => ({
