@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+const THIRTY_DAYS_IN_SECONDS = 2592000;
+
 const priceSchema = new mongoose.Schema({
   productId: {
     type: String,
@@ -12,7 +14,7 @@ const priceSchema = new mongoose.Schema({
   timestamp: {
     type: Date,
     default: Date.now,
-    index: { expires: "30d" }, // Set TTL index for 30 days
+    expires: THIRTY_DAYS_IN_SECONDS
   },
 });
 

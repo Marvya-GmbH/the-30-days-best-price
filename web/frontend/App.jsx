@@ -20,14 +20,7 @@ export default function App() {
       <BrowserRouter>
         <AppBridgeProvider>
           <QueryProvider>
-            <NavigationMenu
-              navigationLinks={[
-                {
-                  label: t("NavigationMenu.pageName"),
-                  destination: "/pagename",
-                },
-              ]}
-            />
+            <NavigationMenu navigationLinks={[]} />
             <Routes pages={pages} />
           </QueryProvider>
         </AppBridgeProvider>
