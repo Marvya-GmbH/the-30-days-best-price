@@ -64,6 +64,7 @@ cron.schedule("0 0 * * *", async () => {
   console.log("Running cron job to fetch, store, and update product prices");
   try {
     const session = await getSession();
+    // strange API
     await fetchStoreAndUpdatePrices(
       { locals: { shopify: { session } } },
       {
