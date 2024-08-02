@@ -107,6 +107,7 @@ export const fetchStoreAndUpdatePrices = async (req, res) => {
     // Extract prices from products and prepare data for insertion
     const prices = products.map((product) => ({
       productId: product.id,
+      // this is not the lowest price
       price: parseFloat(product.variants.edges[0].node.price),
     }));
 
@@ -138,6 +139,7 @@ export const fetchStoreAndUpdatePrices = async (req, res) => {
 
       const existingMetafield = metafieldResponse.data.product.metafield;
 
+      // no conditional needed. You can create and update with the same operation
       // Step 2: Update or create the metafield
       if (existingMetafield) {
         // Update existing metafield
