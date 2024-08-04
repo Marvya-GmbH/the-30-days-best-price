@@ -1,6 +1,7 @@
 import { LATEST_API_VERSION } from "@shopify/shopify-api";
 import { shopifyApp } from "@shopify/shopify-app-express";
 import { MongoDBSessionStorage } from "@shopify/shopify-app-session-storage-mongodb";
+// eslint-disable-next-line import/no-unresolved
 import { restResources } from "@shopify/shopify-api/rest/admin/2023-04";
 import dotenv from "dotenv";
 
