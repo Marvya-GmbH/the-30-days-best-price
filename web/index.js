@@ -6,7 +6,6 @@ import dotenv from "dotenv";
 import shopify from "./shopify.js";
 import PrivacyWebhookHandlers from "./privacy.js";
 import connectDB from "./config/db.js";
-import priceRoutes from "./routes/priceRoutes.js";
 import cron from "node-cron";
 import { getSession } from "./utils/index.js";
 import { fetchStoreAndUpdatePrices } from "./controllers/priceController.js";
@@ -45,9 +44,6 @@ app.post(
 app.use("/api/*", shopify.validateAuthenticatedSession());
 
 app.use(express.json());
-
-// UNUSED
-/* app.use("/api/prices", priceRoutes); */
 
 app.use(shopify.cspHeaders());
 app.use(serveStatic(STATIC_PATH, { index: false }));

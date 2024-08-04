@@ -3,7 +3,7 @@
 client_id = "67725bc263c7bfe0e51e89cc030025c0"
 name = "the-30-days-best-price"
 handle = "the-30-days-best-price-1"
-application_url = "https://humidity-muze-ultra-caring.trycloudflare.com"
+application_url = "https://eng-cool-unusual-last.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_products,write_products"
 
 [auth]
 redirect_urls = [
-  "https://humidity-muze-ultra-caring.trycloudflare.com/auth/callback",
-  "https://humidity-muze-ultra-caring.trycloudflare.com/auth/shopify/callback",
-  "https://humidity-muze-ultra-caring.trycloudflare.com/api/auth/callback"
+  "https://eng-cool-unusual-last.trycloudflare.com/auth/callback",
+  "https://eng-cool-unusual-last.trycloudflare.com/auth/shopify/callback",
+  "https://eng-cool-unusual-last.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
