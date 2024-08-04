@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
 import ShopifyFormat from "@shopify/i18next-shopify";
@@ -29,7 +30,8 @@ const DEFAULT_APP_LOCALE = "en";
  */
 const SUPPORTED_APP_LOCALES = ["en", "de", "fr"];
 
-let _userLocale, _polarisTranslations;
+let _userLocale;
+let _polarisTranslations;
 
 /**
  * Retrieves the user's locale from the `locale` request parameter and matches it to supported app locales.
@@ -129,6 +131,7 @@ const PLURAL_RULES_LOCALE_DATA = {
 async function loadIntlPluralRulesLocaleData(locale) {
   return (await PLURAL_RULES_LOCALE_DATA[locale]()).default;
 }
+
 /**
  * @private
  * @async
@@ -137,7 +140,7 @@ async function loadIntlPluralRulesLocaleData(locale) {
  * @returns Promise of initialized i18next instance
  */
 async function initI18next() {
-  return await i18next
+  return i18next
     .use(initReactI18next)
     .use(ShopifyFormat)
     .use(localResourcesToBackend())
@@ -159,9 +162,9 @@ async function initI18next() {
 }
 
 function localResourcesToBackend() {
-  return resourcesToBackend(async (locale, _namespace) => {
-    return (await import(`../locales/${locale}.json`)).default;
-  });
+  return resourcesToBackend(
+    async (locale) => (await import(`../locales/${locale}.json`)).default
+  );
 }
 
 /**
@@ -180,13 +183,13 @@ async function fetchPolarisTranslations() {
   const defaultPolarisLocale = match(
     [DEFAULT_APP_LOCALE],
     SUPPORTED_POLARIS_LOCALES,
-    DEFAULT_POLARIS_LOCALE,
+    DEFAULT_POLARIS_LOCALE
   );
   // Get the closest matching user locale supported by Polaris
   const polarisLocale = match(
     [getUserLocale()],
     SUPPORTED_POLARIS_LOCALES,
-    defaultPolarisLocale,
+    defaultPolarisLocale
   );
   _polarisTranslations = await loadPolarisTranslations(polarisLocale);
   return _polarisTranslations;

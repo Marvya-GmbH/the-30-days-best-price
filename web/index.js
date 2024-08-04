@@ -3,14 +3,13 @@ import { readFileSync } from "fs";
 import express from "express";
 import serveStatic from "serve-static";
 import dotenv from "dotenv";
+import cron from "node-cron";
 import shopify from "./shopify.js";
-import productCreator from "./product-creator.js";
 import PrivacyWebhookHandlers from "./privacy.js";
 import connectDB from "./config/db.js";
-import priceRoutes from "./routes/priceRoutes.js";
-import cron from "node-cron";
 import { getSession } from "./utils/index.js";
 import { fetchStoreAndUpdatePrices } from "./controllers/priceController.js";
+import logger from "./utils/logger.js";
 
 dotenv.config();
 
@@ -47,42 +46,19 @@ app.use("/api/*", shopify.validateAuthenticatedSession());
 
 app.use(express.json());
 
-app.use("/api/prices", priceRoutes);
-
-app.get("/api/products/count", async (_req, res) => {
-  const countData = await shopify.api.rest.Product.count({
-    session: res.locals.shopify.session,
-  });
-  res.status(200).send(countData);
-});
-
-app.post("/api/products", async (_req, res) => {
-  let status = 200;
-  let error = null;
-
-  try {
-    await productCreator(res.locals.shopify.session);
-  } catch (e) {
-    console.log(`Failed to process products/create: ${e.message}`);
-    status = 500;
-    error = e.message;
-  }
-  res.status(status).send({ success: status === 200, error });
-});
-
 app.use(shopify.cspHeaders());
 app.use(serveStatic(STATIC_PATH, { index: false }));
 
-app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
-  return res
+app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res) =>
+  res
     .status(200)
     .set("Content-Type", "text/html")
-    .send(readFileSync(join(STATIC_PATH, "index.html")));
-});
+    .send(readFileSync(join(STATIC_PATH, "index.html")))
+);
 
 // Schedule task to run at midnight every day
 cron.schedule("0 0 * * *", async () => {
-  console.log("Running cron job to fetch, store, and update product prices");
+  logger.info("Running cron job to fetch, store, and update product prices");
   try {
     const session = await getSession();
     await fetchStoreAndUpdatePrices(
@@ -94,9 +70,12 @@ cron.schedule("0 0 * * *", async () => {
         }),
       }
     );
+    logger.info("Cron job completed successfully");
   } catch (error) {
-    console.error(`Error running cron job: ${error.message}`);
+    logger.error(`Error running cron job: ${error.message}`);
   }
 });
 
-app.listen(PORT);
+app.listen(PORT, () => {
+  logger.info(`Server is running on port ${PORT}`);
+});
