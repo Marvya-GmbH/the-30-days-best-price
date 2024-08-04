@@ -46,78 +46,46 @@ export const fetchStoreAndUpdatePrices = async (req, res) => {
 
       const existingMetafield = metafieldResponse.data.product.metafield;
 
-      // no conditional needed. You can create and update with the same operation
+      // Construct the metafield input for the mutation
+      const metafieldInput = existingMetafield
+        ? `{ id: "${existingMetafield.id}", value: "${bestPrice}" }`
+        : `{ namespace: "custom", key: "best_price_30_days", value: "${bestPrice}", type: "single_line_text_field" }`;
+
       // Step 2: Update or create the metafield
-      if (existingMetafield) {
-        // Update existing metafield
-        await client.query({
-          data: {
-            query: `
-              mutation {
-                productUpdate(input: {
-                  id: "${productId}",
-                  metafields: [
-                    {
-                      id: "${existingMetafield.id}",
-                      value: "${bestPrice}"
-                    }
-                  ]
-                }) {
-                  product {
-                    id
-                    metafields(first: 100) {
-                      edges {
-                        node {
-                          key
-                          value
-                        }
-                      }
-                    }
-                  }
-                  userErrors {
-                    field
-                    message
+      const mutation = `
+        mutation {
+          productUpdate(input: {
+            id: "${productId}",
+            metafields: [
+              ${metafieldInput}
+            ]
+          }) {
+            product {
+              id
+              metafields(first: 100) {
+                edges {
+                  node {
+                    key
+                    value
                   }
                 }
-              }`,
-          },
-        });
-      } else {
-        // Create new metafield
-        await client.query({
-          data: {
-            query: `
-              mutation {
-                productUpdate(input: {
-                  id: "${productId}",
-                  metafields: [
-                    {
-                      namespace: "custom",
-                      key: "best_price_30_days",
-                      value: "${bestPrice}",
-                      type: "single_line_text_field"
-                    }
-                  ]
-                }) {
-                  product {
-                    id
-                    metafields(first: 100) {
-                      edges {
-                        node {
-                          key
-                          value
-                        }
-                      }
-                    }
-                  }
-                  userErrors {
-                    field
-                    message
-                  }
-                }
-              }`,
-          },
-        });
+              }
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }`;
+
+      const mutationResponse = await client.query({
+        data: { query: mutation },
+      });
+
+      if (mutationResponse.body.data.productUpdate.userErrors.length > 0) {
+        throw new Error(
+          mutationResponse.body.data.productUpdate.userErrors[0].message
+        );
       }
     }
 
